@@ -6,10 +6,11 @@ The core UX principle is **radical simplicity**: only show the user **one task a
 This reduces overwhelm, decision fatigue, and distraction.
 
 ## Tech Stack
-- **Framework**: Next.js 15 (App Router)
+- **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript (strict mode preferred)
 - **State Management**: Jotai (atomic state, no Redux/Context boilerplate)
 - **Styling**: Tailwind CSS v4
+- **Font**: `geist` npm package (`GeistSans`) — do NOT use `next/font/google`
 - **Package Manager**: npm
 
 ## Core UX Principles
@@ -33,6 +34,7 @@ This reduces overwhelm, decision fatigue, and distraction.
 app/
   layout.tsx        # Root layout
   page.tsx          # Home page – shows the single current task
+  providers.tsx     # Jotai <Provider> wrapper
 components/
   TaskCard.tsx      # Displays the single current task
   AddTask.tsx       # Input to add a new task
@@ -40,6 +42,7 @@ components/
 lib/
   atoms.ts          # All Jotai atoms (task list, etc.)
   types.ts          # Shared TypeScript types (Task, etc.)
+  utils.ts          # insertByPriority, formatDeadline helpers
 ```
 
 ## Data Model
@@ -60,8 +63,28 @@ export type Task = {
 - `tasksAtom` — `atomWithStorage<Task[]>("adhd-tasks", [])` — the ordered list of tasks, persisted to localStorage
 - The **first item** (`tasks[0]`) is always the active/visible task
 - Completing a task removes it from index 0, surfacing the next
-- `"urgent"` and `"high"` priority tasks can be promoted to the front of the queue to skip ahead of `"normal"` tasks
 - `deadline` is an optional timestamp; surface urgency cues when a deadline is approaching or overdue
+
+## Priority Queue Order
+Effective rank (lower = higher priority), implemented in `lib/utils.ts`:
+1. `urgent` — always first, regardless of deadline
+2. Due today — any non-urgent task whose `deadline` falls on today's date
+3. `high` — no deadline or future deadline
+4. `normal` — no deadline or future deadline
+
+`insertByPriority(tasks, newTask)` inserts a new task at the correct position based on this rank.
+
+## Deployment
+- Target: **GitHub Pages** (static export) at `https://alexandergrxnt.github.io/adhd-todo-list/`
+- `next.config.ts` uses `output: "export"`, `basePath: "/adhd-todo-list"`, `assetPrefix: "/adhd-todo-list"`
+- Do NOT introduce API routes, `getServerSideProps`, or any server-side features — they are incompatible with static export
+- CI/CD: `.github/workflows/deploy.yml` builds and deploys `out/` to GitHub Pages on every push to `main`
+
+## Development Workflow
+- Always work on a `feature/*` or `fix/*` branch — never commit directly to `main`
+- Commit after each logical unit of work (e.g. types, component, tests) — not one giant commit per feature
+- Run `npm run build` to verify the build passes before considering a task complete
+- Keep each session scoped to a single feature — start a new chat for a new feature
 
 ## Do's
 - Keep the UI laser-focused on the current task
