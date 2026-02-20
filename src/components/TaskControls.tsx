@@ -24,9 +24,9 @@ export function TaskControls() {
     setTasks((prev) => {
       if (prev.length <= 1) return prev;
       const [first, ...rest] = prev;
-      // Re-insert the skipped task respecting priority order, but after
-      // same-priority tasks so it doesn't immediately jump back to front.
-      return insertByPriority(rest, { ...first, priority: "normal" });
+      // Re-insert the skipped task at the end of its own priority group,
+      // preserving its original priority so it doesn't get permanently demoted.
+      return insertByPriority(rest, first);
     });
   }
 
