@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useAtom } from "jotai";
-import { tasksAtom } from "@/lib/atoms";
+import { useAtom, useSetAtom } from "jotai";
+import { tasksAtom, historyAtom } from "@/lib/atoms";
 import { insertByPriority } from "@/lib/utils";
 
 export function TaskControls() {
   const [tasks, setTasks] = useAtom(tasksAtom);
+  const addToHistory = useSetAtom(historyAtom);
   const [completing, setCompleting] = useState(false);
 
   if (tasks.length === 0) return null;
@@ -15,7 +16,16 @@ export function TaskControls() {
     setCompleting(true);
     // Brief animation delay before removing the task
     setTimeout(() => {
-      setTasks((prev) => prev.slice(1));
+      setTasks((prev) => {
+        const [completed, ...rest] = prev;
+        if (completed) {
+          addToHistory((history) => [
+            { ...completed, completedAt: Date.now() },
+            ...history,
+          ]);
+        }
+        return rest;
+      });
       setCompleting(false);
     }, 600);
   }

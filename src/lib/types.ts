@@ -7,3 +7,7 @@ export type Task = {
   priority: Priority;
   deadline?: number; // Date.now() timestamp — optional
 };
+
+export type CompletedTask = Task & {
+  completedAt: number; // Date.now() timestamp when the task was completed
+};

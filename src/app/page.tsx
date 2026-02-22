@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { TaskCard } from "@/components/TaskCard";
 import { AddTask } from "@/components/AddTask";
 
@@ -11,6 +12,13 @@ export default function Home() {
 
       <TaskCard />
       <AddTask />
+
+      <Link
+        href="/history"
+        className="text-sm text-zinc-600 hover:text-zinc-400 transition-colors duration-200 mt-4"
+      >
+        View completed tasks →
+      </Link>
     </main>
   );
 }
